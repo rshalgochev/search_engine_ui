@@ -1,0 +1,24 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "ui.fullname" . }}
+  annotations:
+    ingress.alb.yc.io/subnets: {{ .Values.ingress.subnetsIds }}
+    ingress.alb.yc.io/external-ipv4-address: {{ .Values.ingress.extIp | default "auto" }}
+spec:
+  tls:
+    - hosts:
+      - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.certName }}
+  rules:
+  - host: {{ .Values.ingress.host | default .Release.Name }}
+    http:
+      paths:
+      - path: "/"
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "ui.fullname" . }}
+            port:
+              number: {{ .Values.service.externalPort }}

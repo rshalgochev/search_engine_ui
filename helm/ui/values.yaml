@@ -1,0 +1,16 @@
+---
+service:
+  internalPort: 8000
+  externalPort: 8000
+
+image:
+  repository: cr.yandex/crpjtcb32doojdo61rfo/ui
+  tag: "1.0"
+
+ingress:
+  host: test.rshalgochev.ru
+  certName: yc-certmgr-cert-id-fpq2t8glrb3dfgbbegvd
+  subnetsIds: e9bndppkj6ugdtga7ekd
+
+databaseHost:
+databasePort:
