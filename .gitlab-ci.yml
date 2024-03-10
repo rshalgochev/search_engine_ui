@@ -45,8 +45,6 @@ build_image:
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${YC_REGISTRY}/${YC_REGISTRY_ID}/${APP_NAME}:$nextReleaseVersion"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master"
 
 build_helm_chart:
   stage: build
