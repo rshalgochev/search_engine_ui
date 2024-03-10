@@ -23,7 +23,7 @@ build_coverage_report:
         path: .coverage
 
 make_release_number:
-  image: node:12-buster-slim
+  image: node:21.7.0-bullseye-slim
   stage: release
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git-core ca-certificates
