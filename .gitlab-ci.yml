@@ -1,5 +1,6 @@
 stages:
   - test
+  - release
   - build
 
 run_tests:
@@ -21,6 +22,15 @@ build_coverage_report:
         coverage_format: cobertura
         path: .coverage
 
+make_release_number:
+  image: node:12-buster-slim
+  stage: release
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git-core ca-certificates
+    - npm install -g semantic-release @semantic-release/gitlab
+  script:
+    - semantic-release
+
 build_image:
   stage: build
   image:
@@ -32,7 +42,7 @@ build_image:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${YC_REGISTRY}/${YC_REGISTRY_ID}/${APP_NAME}:${CI_COMMIT_SHORT_SHA}"
+      --destination "${YC_REGISTRY}/${YC_REGISTRY_ID}/${APP_NAME}:$nextReleaseVersion"
 
 build_helm_chart:
   stage: build
@@ -43,7 +53,7 @@ build_helm_chart:
     - export HELM_EXPERIMENTAL_OCI=1
     - echo ${YC_TOKEN} | helm registry login ${YC_REGISTRY} -u oauth --password-stdin
     - cd helm
-    - sed -i 's/appVer/${CI_COMMIT_SHORT_SHA}/g' ${APP_NAME}/Chart.yaml
-    - sed -i 's/chartVer/1\.0\.0\-${CI_COMMIT_SHORT_SHA}/g' ${APP_NAME}/Chart.yaml
-    - helm package ${APP_NAME}/ --version 1.0.0-${CI_COMMIT_SHORT_SHA}
-    - helm push ${APP_NAME}-1.0.0-${CI_COMMIT_SHORT_SHA} oci://${YC_REGISTRY}/${YC_REGISTRY_ID}
+    - sed -i 's/appVer/$nextReleaseVersion/g' ${APP_NAME}/Chart.yaml
+    - sed -i 's/chartVer/$nextReleaseVersion/g' ${APP_NAME}/Chart.yaml
+    - helm package ${APP_NAME}/ --version "$nextReleaseVersion"
+    - helm push ${APP_NAME}-$nextReleaseVersion oci://${YC_REGISTRY}/${YC_REGISTRY_ID}
