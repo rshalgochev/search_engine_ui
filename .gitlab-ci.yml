@@ -19,7 +19,7 @@ build_coverage_report:
   artifacts:
     reports:
       coverage_report:
-        coverage_format: coverage.py
+        coverage_format: cobertura
         path: .coverage
 
 build_image:
