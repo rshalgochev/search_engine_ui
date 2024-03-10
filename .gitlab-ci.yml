@@ -1,0 +1,63 @@
+stages:
+  - test
+  - release
+  - build
+
+run_tests:
+  stage: test
+  image: python:3.6-alpine
+  before_script:
+    - pip install --no-cache-dir -r requirements.txt -r requirements-test.txt
+  script:
+    - python -m unittest discover -s tests/
+
+build_coverage_report:
+  extends: run_tests
+  script:
+    - coverage run -m unittest discover -s tests/
+    - coverage report --include ui/ui.py
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: .coverage
+
+make_release_number:
+  image: node:21.7.0-bullseye-slim
+  stage: release
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git-core ca-certificates
+    - npm install -g semantic-release @semantic-release/gitlab
+  script:
+    - semantic-release
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+
+build_image:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"${YC_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "oauth" "${YC_TOKEN}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${YC_REGISTRY}/${YC_REGISTRY_ID}/${APP_NAME}:$nextReleaseVersion"
+
+build_helm_chart:
+  stage: build
+  image:
+    name: alpine/helm:3.14.2
+    entrypoint: [""]
+  script:
+    - export HELM_EXPERIMENTAL_OCI=1
+    - echo ${YC_TOKEN} | helm registry login ${YC_REGISTRY} -u oauth --password-stdin
+    - cd helm
+    - sed -i 's/appVer/$nextReleaseVersion/g' ${APP_NAME}/Chart.yaml
+    - sed -i 's/chartVer/$nextReleaseVersion/g' ${APP_NAME}/Chart.yaml
+    - helm package ${APP_NAME}/ --version "$nextReleaseVersion"
+    - helm push ${APP_NAME}-$nextReleaseVersion oci://${YC_REGISTRY}/${YC_REGISTRY_ID}
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"

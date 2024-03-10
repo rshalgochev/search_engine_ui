@@ -1,6 +1,8 @@
 .venv
+.git
+.gitignore
 venv
-tests
 README.md
-requirements-test.txt
 Dockerfile
+helm
+.gitlab-ci.yml
