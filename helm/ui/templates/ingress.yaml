@@ -12,7 +12,7 @@ spec:
       - {{ .Values.ingress.host }}
       secretName: {{ .Values.ingress.certName }}
   rules:
-  - host: {{ .Values.ingress.host | default .Release.Name }}
+  - host: {{ tpl $.Values.ingress.host $ }}
     http:
       paths:
       - path: "/"
