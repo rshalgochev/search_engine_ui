@@ -2,7 +2,6 @@ stages:
   - test
   - build
 
-
 run_tests:
   stage: test
   image: python:3.6-alpine
@@ -34,3 +33,15 @@ build_image:
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${YC_REGISTRY}/${YC_REGISTRY_ID}/${APP_NAME}:${CI_COMMIT_SHORT_SHA}"
+
+build_helm_chart:
+  stage: build
+  image: alpine/helm:3.14.2
+  script:
+    - export HELM_EXPERIMENTAL_OCI=1
+    - echo ${YC_TOKEN} | helm registry login ${YC_REGISTRY} -u oauth --password-stdin
+    - cd helm
+    - sed -i 's/appVer/${CI_COMMIT_SHORT_SHA}/g' ${APP_NAME}/Chart.yaml
+    - sed -i 's/chartVer/1\.0\.0\-${CI_COMMIT_SHORT_SHA}/g' ${APP_NAME}/Chart.yaml
+    - helm package ${APP_NAME}/ --version 1.0.0-${CI_COMMIT_SHORT_SHA}
+    - helm push ${APP_NAME}-1.0.0-${CI_COMMIT_SHORT_SHA} oci://${YC_REGISTRY}/${YC_REGISTRY_ID}
