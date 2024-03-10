@@ -37,6 +37,7 @@ build_image:
 build_helm_chart:
   stage: build
   image: alpine/helm:3.14.2
+  entrypoint: [""]
   script:
     - export HELM_EXPERIMENTAL_OCI=1
     - echo ${YC_TOKEN} | helm registry login ${YC_REGISTRY} -u oauth --password-stdin
