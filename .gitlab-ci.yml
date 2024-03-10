@@ -29,6 +29,7 @@ make_release_number:
     - apt-get update && apt-get install -y --no-install-recommends git-core ca-certificates
     - npm install -g semantic-release @semantic-release/gitlab
   script:
+    - export GL_TOKEN=${SEMVER_TOKEN}
     - semantic-release
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
