@@ -30,6 +30,8 @@ make_release_number:
     - npm install -g semantic-release @semantic-release/gitlab
   script:
     - semantic-release
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
 
 build_image:
   stage: build
@@ -43,6 +45,8 @@ build_image:
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${YC_REGISTRY}/${YC_REGISTRY_ID}/${APP_NAME}:$nextReleaseVersion"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
 
 build_helm_chart:
   stage: build
@@ -57,3 +61,5 @@ build_helm_chart:
     - sed -i 's/chartVer/$nextReleaseVersion/g' ${APP_NAME}/Chart.yaml
     - helm package ${APP_NAME}/ --version "$nextReleaseVersion"
     - helm push ${APP_NAME}-$nextReleaseVersion oci://${YC_REGISTRY}/${YC_REGISTRY_ID}
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
