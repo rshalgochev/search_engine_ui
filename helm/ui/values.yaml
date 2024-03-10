@@ -1,0 +1,16 @@
+---
+service:
+  internalPort: 8000
+  externalPort: 8000
+
+image:
+  repository:
+  tag:
+
+ingress:
+  host: "{{ .Rlease.Name }}.rshalgochev.ru"
+  certName:
+  subnetsIds:
+
+databaseHost:
+databasePort:

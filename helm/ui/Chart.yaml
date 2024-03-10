@@ -1,0 +1,7 @@
+name: ui
+version: 1.0.0
+description: OTUS search_engine UI
+maintainers:
+  - name: Roman Shalgochev
+    email: rshalgochev@gmail.com
+appVersion: 1.0
